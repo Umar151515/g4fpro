@@ -2,7 +2,7 @@ from typing import Optional, List, Union, Dict, Any
 import json
 from abc import ABC, abstractmethod
 
-from exceptions import (
+from .exceptions import (
     ModelNotSupportedError, InvalidMessageFormatError, G4FProParseError
 )
 from .models import Models
@@ -109,7 +109,7 @@ class BaseChat(ABC):
         
         final_model = model if model is not None else self.model
         if final_model is None:
-            final_model = Models.CHAT_MODELS[0]
+            final_model = list(Models.CHAT_MODELS)[0]
         
         params = {
             "model": self._check_model(final_model),

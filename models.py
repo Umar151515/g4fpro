@@ -15,20 +15,6 @@ class Models:
 
     URL: str = "https://gpt4free.pro/v1/models"
 
-    ALL_MODELS: Set[str] = {
-        "deepseek-v3.1", "command-a", "flux-schnell", "deepseek-chat", "deepseek-reasoner",
-        "glm-4.6", "gpt-5-nano", "claude-sonnet-4", "claude-3-7-sonnet", "claude-sonnet-4.5",
-        "claude-haiku-4.5", "hermes-4-405b", "hermes-3-405b", "qwen3-coder", "qwen3-coder-big",
-        "qwq-32b-fast", "gpt-oss-120b", "llama-3.3", "kimi-k2", "kimi-k2-0905", "llama-4-maverick",
-        "llama-4-scout", "gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro",
-        "lucid-origin", "sdxl", "nano-banana", "grok-4", "grok-4-think", "grok-code-1",
-        "grok-3-mini", "gpt-image-1", "gpt-5-chat", "gpt-5-mini", "qwen2.5-coder-32b",
-        "qwen3-omni", "qwen3-next", "deepseek-r1-0528", "mistral-small-3.1-24b", "gpt-4.1-mini",
-        "gpt-4.1-nano", "o4-mini", "o3-mini", "gpt-4o-mini", "gpt-3.5-turbo", "deepseek-v3",
-        "deepseek-v3.2", "deepseek-r1", "glm-4.5", "glm-4.5-air", "ring-1t", "ling-1t",
-        "ernie-4.5", "sonar"
-    }
-
     CHAT_MODELS: Set[str] = {
         "deepseek-v3.1", "command-a", "deepseek-chat", "deepseek-reasoner", "glm-4.6",
         "gpt-5-nano", "claude-sonnet-4", "claude-3-7-sonnet", "claude-sonnet-4.5",
@@ -45,6 +31,8 @@ class Models:
     IMAGE_MODELS: Set[str] = {
         "flux-schnell", "sdxl", "nano-banana", "gpt-image-1"
     }
+
+    ALL_MODELS: Set[str] = CHAT_MODELS | IMAGE_MODELS
 
     @staticmethod
     def _fetch_remote_models() -> Set[str]:

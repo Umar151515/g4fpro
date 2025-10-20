@@ -135,7 +135,7 @@ class BaseImageGenerator(ABC):
         
         final_model = model if model is not None else self.model
         if final_model is None:
-            final_model = Models.IMAGE_MODELS[0]
+            final_model = list(Models.IMAGE_MODELS)[0]
         
         final_n = n if n is not None else self.n
         
