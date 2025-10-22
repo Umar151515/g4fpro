@@ -41,7 +41,7 @@ class ImageGenerator(BaseImageGenerator):
         payload = self._prepare_payload(prompt, model, n)
         
         try:
-            with httpx.Client(timeout=200) as client:
+            with httpx.Client(timeout=None) as client:
                 response = client.post(self.url, headers=self.headers, json=payload)
                 
                 if response.status_code != 200:

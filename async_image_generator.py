@@ -41,7 +41,7 @@ class AsyncImageGenerator(BaseImageGenerator):
         payload = self._prepare_payload(prompt, model, n)
         
         try:
-            async with httpx.AsyncClient(timeout=200) as client:
+            async with httpx.AsyncClient(timeout=None) as client:
                 response = await client.post(self.url, headers=self.headers, json=payload)
                 
                 if response.status_code != 200:

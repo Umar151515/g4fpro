@@ -16,23 +16,31 @@ class Models:
     URL: str = "https://gpt4free.pro/v1/models"
 
     CHAT_MODELS: Set[str] = {
-        "deepseek-v3.1", "command-a", "deepseek-chat", "deepseek-reasoner", "glm-4.6",
-        "gpt-5-nano", "claude-sonnet-4", "claude-3-7-sonnet", "claude-sonnet-4.5",
-        "claude-haiku-4.5", "hermes-4-405b", "hermes-3-405b", "qwen3-coder", "qwen3-coder-big",
-        "qwq-32b-fast", "gpt-oss-120b", "llama-3.3", "kimi-k2", "kimi-k2-0905", "llama-4-maverick",
-        "llama-4-scout", "gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro",
-        "lucid-origin", "grok-4", "grok-4-think", "grok-code-1", "grok-3-mini", "gpt-5-chat",
-        "gpt-5-mini", "qwen2.5-coder-32b", "qwen3-omni", "qwen3-next", "deepseek-r1-0528",
-        "mistral-small-3.1-24b", "gpt-4.1-mini", "gpt-4.1-nano", "o4-mini", "o3-mini",
-        "gpt-4o-mini", "gpt-3.5-turbo", "deepseek-v3", "deepseek-v3.2", "deepseek-r1",
-        "glm-4.5", "glm-4.5-air", "ring-1t", "ling-1t", "ernie-4.5", "sonar"
+        'gpt-3.5-turbo', 'gpt-5-chat', 'gpt-4o-mini', 'o3-mini', 'gpt-4.1-mini', 
+        'gpt-5-nano', 'gpt-5-mini', 'gpt-4.1-nano', 'o1-pro', 'o4-mini',
+        'claude-sonnet-4.5', 'claude-sonnet-4', 'claude-haiku-4.5', 'claude-3-7-sonnet',
+        'gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemma-3n-e4b',
+        'deepseek-chat', 'deepseek-r1-0528', 'deepseek-v3.2', 'deepseek-v3', 
+        'deepseek-v3.1', 'deepseek-reasoner', 'deepseek-r1',
+        'qwen2.5-coder-32b', 'qwen3-omni', 'qwq-32b-fast', 'qwen3-next', 'qwen3-coder', 'qwen3-coder-big',
+        'glm-4.5-air', 'glm-4.6', 'glm-4.5', 'ernie-4.5',
+        'grok-code-1', 'grok-4-think', 'grok-4', 'grok-3-mini',
+        'llama-4-scout', 'llama-4-maverick', 'llama-3.3',
+        'mistral-small-3.1-24b', 'mistral-medium-3', 'command-a', 'sonar',
+        'nemotron-ultra-235b', 'kimi-k2-0905', 'kimi-k2',
+        'nova-micro', 'nova-pro', 'nova-lite', 'hermes-4-405b', 'hermes-3-405b', 
+        'lucid-origin', 'goliath-120b', 'gpt-oss-120b', 'ling-1t', 'ring-1t', 'cliptagger-12b', 'seed-oss'
     }
 
     IMAGE_MODELS: Set[str] = {
-        "flux-schnell", "sdxl", "nano-banana", "gpt-image-1"
+        'dall-e-3', 'gpt-image-1', 'sd-3.5-large', 'sd-3.5', 'sdxl', 'flux-schnell', 'nano-banana'
     }
 
-    ALL_MODELS: Set[str] = CHAT_MODELS | IMAGE_MODELS
+    VIDEO_MODELS: Set[str] = {
+        'cogvideox-flash'
+    }
+
+    ALL_MODELS: Set[str] = CHAT_MODELS | IMAGE_MODELS | VIDEO_MODELS
 
     @staticmethod
     def _fetch_remote_models() -> Set[str]:
@@ -95,7 +103,7 @@ class Models:
     @classmethod
     def get_all_models(cls) -> Set[str]:
         """Returns all supported models available on the server."""
-        return cls.ALL_MODELS & cls._fetch_remote_models()
+        return cls._fetch_remote_models()
 
     @classmethod
     def get_chat_models(cls) -> Set[str]:
@@ -108,10 +116,15 @@ class Models:
         return cls.IMAGE_MODELS & cls._fetch_remote_models()
 
     @classmethod
+    def get_video_models(cls) -> Set[str]:
+        """Returns all available video-generation models."""
+        return cls.VIDEO_MODELS & cls._fetch_remote_models()
+
+    @classmethod
     async def get_all_models_async(cls) -> Set[str]:
         """Asynchronously returns all supported models available on the server."""
         remote_models = await cls._fetch_remote_models_async()
-        return cls.ALL_MODELS & remote_models
+        return remote_models
 
     @classmethod
     async def get_chat_models_async(cls) -> Set[str]:
@@ -124,3 +137,9 @@ class Models:
         """Asynchronously returns all available image-generation models."""
         remote_models = await cls._fetch_remote_models_async()
         return cls.IMAGE_MODELS & remote_models
+
+    @classmethod
+    async def get_video_models_async(cls) -> Set[str]:
+        """Asynchronously returns all available video-generation models."""
+        remote_models = await cls._fetch_remote_models_async()
+        return cls.VIDEO_MODELS & remote_models
