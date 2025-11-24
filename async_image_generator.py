@@ -6,6 +6,7 @@ from pathlib import Path
 import httpx
 from PIL import Image
 
+from .http_client import async_client
 from .exceptions import ImageGenerationError
 from .base_image_generator import BaseImageGenerator
 
@@ -41,30 +42,29 @@ class AsyncImageGenerator(BaseImageGenerator):
         payload = self._prepare_payload(prompt, model, n)
         
         try:
-            async with httpx.AsyncClient(timeout=None) as client:
-                response = await client.post(self.url, headers=self.headers, json=payload)
+            response = await async_client.post(self.url, headers=self.headers, json=payload)
+            
+            if response.status_code != 200:
+                error_message = f"HTTP error occurred: {response.status_code}"
+                try:
+                    error_data = response.json()
+                    err = error_data.get("error")
+                    error_message = err.get("message", str(err)) if isinstance(err, dict) else str(err)
+                except (json.JSONDecodeError, AttributeError, ValueError):
+                    error_message = response.text or error_message
                 
-                if response.status_code != 200:
-                    error_message = f"HTTP error occurred: {response.status_code}"
-                    try:
-                        error_data = response.json()
-                        err = error_data.get("error")
-                        error_message = err.get("message", str(err)) if isinstance(err, dict) else str(err)
-                    except (json.JSONDecodeError, AttributeError, ValueError):
-                        error_message = response.text or error_message
-                    
-                    raise ImageGenerationError(response.status_code, error_message)
-                
-                data = response.json()
-                
-                if data and data.get("data"):
-                    urls = [item.get("url") for item in data["data"] if item.get("url")]
-                    if urls:
-                        return urls
-                    else:
-                        raise ImageGenerationError(500, "API returned empty URLs in response")
+                raise ImageGenerationError(response.status_code, error_message)
+            
+            data = response.json()
+            
+            if data and data.get("data"):
+                urls = [item.get("url") for item in data["data"] if item.get("url")]
+                if urls:
+                    return urls
                 else:
-                    raise ImageGenerationError(500, "API returned empty data in response")
+                    raise ImageGenerationError(500, "API returned empty URLs in response")
+            else:
+                raise ImageGenerationError(500, "API returned empty data in response")
                     
         except httpx.TimeoutException as e:
             raise ImageGenerationError(408, f"Request timeout: {e}")
@@ -178,11 +178,10 @@ class AsyncImageGenerator(BaseImageGenerator):
             ImageGenerationError: When image download fails
         """
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(url)
-                response.raise_for_status()
-                
-                image_data = BytesIO(response.content)
-                return Image.open(image_data)
+            response = await async_client.get(url)
+            response.raise_for_status()
+            
+            image_data = BytesIO(response.content)
+            return Image.open(image_data)
         except Exception as e:
             raise ImageGenerationError(500, f"Failed to download image from {url}: {str(e)}")

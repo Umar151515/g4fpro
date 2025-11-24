@@ -2,6 +2,7 @@ from typing import Set
 
 import httpx
 
+from .http_client import sync_client, async_client
 from .exceptions import G4FProException, G4FProTimeoutError, APIError, G4FProParseError, G4FProConnectionError
 
 
@@ -48,8 +49,7 @@ class Models:
         Fetches available models from G4FPro API (synchronously).
         """
         try:
-            with httpx.Client(timeout=10.0) as client:
-                response = client.get(Models.URL)
+            response = sync_client.get(Models.URL)
 
             if response.status_code != 200:
                 try:
@@ -77,8 +77,7 @@ class Models:
         Fetches available models from G4FPro API (asynchronously).
         """
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.get(Models.URL)
+            response = await async_client.get(Models.URL)
             
             if response.status_code != 200:
                 try:

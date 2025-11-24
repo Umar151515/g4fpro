@@ -1,9 +1,9 @@
 from json import JSONDecodeError
 from typing import List, Union, Optional, Dict, Any, Generator
 
-import httpx
 from httpx import TimeoutException, ConnectError
 
+from .http_client import sync_client
 from .base_chat import BaseChat
 from .messages import Messages
 from .exceptions import (
@@ -87,12 +87,11 @@ class Chat(BaseChat):
         )
         
         try:
-            with httpx.Client(timeout=None) as client:
-                response = client.post(
-                    self.url, 
-                    headers=self.headers, 
-                    json=payload,
-                )
+            response = sync_client.post(
+                self.url, 
+                headers=self.headers, 
+                json=payload,
+            )
             
             if response.status_code != 200:
                 error_message = f"HTTP error occurred: {response.status_code}"
@@ -183,38 +182,37 @@ class Chat(BaseChat):
         )
         
         try:
-            with httpx.Client(timeout=None) as client:
-                with client.stream(
-                    "POST",
-                    self.url,
-                    headers=self.headers,
-                    json=payload
-                ) as response:
-                    
-                    if response.status_code != 200:
-                        error_message = f"HTTP error occurred: {response.status_code}"
+            with sync_client.stream(
+                "POST",
+                self.url,
+                headers=self.headers,
+                json=payload
+            ) as response:
+                
+                if response.status_code != 200:
+                    error_message = f"HTTP error occurred: {response.status_code}"
+                    try:
+                        error_data = response.read()
                         try:
-                            error_data = response.read()
-                            try:
-                                import json
-                                error_json = json.loads(error_data)
-                                err = error_json.get("error")
-                                error_message = err.get("message", str(err)) if isinstance(err, dict) else str(err)
-                            except (JSONDecodeError, AttributeError, ValueError):
-                                error_message = error_data.decode() if error_data else error_message
-                        except Exception:
-                            pass
-                        
-                        if response.status_code == 404:
-                            raise ModelNotFoundError(response.status_code, error_message)
-                        else:
-                            raise APIError(response.status_code, error_message)
+                            import json
+                            error_json = json.loads(error_data)
+                            err = error_json.get("error")
+                            error_message = err.get("message", str(err)) if isinstance(err, dict) else str(err)
+                        except (JSONDecodeError, AttributeError, ValueError):
+                            error_message = error_data.decode() if error_data else error_message
+                    except Exception:
+                        pass
                     
-                    for line in response.iter_lines():
-                        if line.strip():
-                            content = self._process_stream_chunk(line)
-                            if content is not None:
-                                yield content
+                    if response.status_code == 404:
+                        raise ModelNotFoundError(response.status_code, error_message)
+                    else:
+                        raise APIError(response.status_code, error_message)
+                
+                for line in response.iter_lines():
+                    if line.strip():
+                        content = self._process_stream_chunk(line)
+                        if content is not None:
+                            yield content
                                 
         except TimeoutException as e:
             raise G4FProTimeoutError(f"Request timed out: {e}") from e

@@ -6,6 +6,7 @@ from pathlib import Path
 import httpx
 from PIL import Image
 
+from .http_client import sync_client
 from .exceptions import ImageGenerationError
 from .base_image_generator import BaseImageGenerator
 
@@ -41,7 +42,7 @@ class ImageGenerator(BaseImageGenerator):
         payload = self._prepare_payload(prompt, model, n)
         
         try:
-            with httpx.Client(timeout=None) as client:
+            with sync_client.Client(timeout=None) as client:
                 response = client.post(self.url, headers=self.headers, json=payload)
                 
                 if response.status_code != 200:
@@ -166,11 +167,10 @@ class ImageGenerator(BaseImageGenerator):
 
     def _download_image(self, url: str) -> Image.Image:
         try:
-            with httpx.Client() as client:
-                response = client.get(url)
-                response.raise_for_status()
-                
-                image_data = BytesIO(response.content)
-                return Image.open(image_data)
+            response = sync_client.get(url)
+            response.raise_for_status()
+            
+            image_data = BytesIO(response.content)
+            return Image.open(image_data)
         except Exception as e:
             raise ImageGenerationError(500, f"Failed to download image from {url}: {str(e)}")
