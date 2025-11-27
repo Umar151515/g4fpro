@@ -42,7 +42,7 @@ class ImageGenerator(BaseImageGenerator):
         payload = self._prepare_payload(prompt, model, n)
         
         try:
-            with sync_client.Client(timeout=None) as client:
+            with sync_client as client:
                 response = client.post(self.url, headers=self.headers, json=payload)
                 
                 if response.status_code != 200:
